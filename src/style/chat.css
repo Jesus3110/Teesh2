@@ -1,0 +1,515 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+    background-color: #0d1b22;
+    color: #e0f2e9;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .app-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+  
+  .sidebar {
+  width: 280px;
+  background: #0f2733;
+  color: #d4e7dd;
+  padding: 1rem;
+  overflow-y: auto;
+  border-right: 2px solid #4caf50;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+  
+  
+  .sidebar-toggle {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background: transparent;
+    color: #4caf50;
+    font-size: 24px;
+    border: none;
+    z-index: 20;
+    cursor: pointer;
+  }
+  
+  .sidebar-item {
+    background: #12303e;
+    margin: 0.5rem 0;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .sidebar-item:hover {
+    background: #1c3e4c;
+  }
+  
+  .chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    margin-left: 0; /* Asegura que no hay margen izquierdo */
+  }
+  
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: #0d1b22;
+    padding: 0;
+    margin-left: 0; /* Elimina cualquier margen izquierdo */
+  }
+  
+  
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 120px); /* Aumenté el espacio restado */
+  padding: 1rem;
+  box-sizing: border-box;
+  padding-bottom: 80px; /* Espacio para el input */
+  height: calc(100% - 140px); /* Más espacio para el input */
+  padding-bottom: 90px; /* Más espacio en la parte inferior */
+}
+  
+
+  h2 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    margin: 0;
+    padding: 1rem;
+    border-bottom: 2px solid #4caf50;
+    width: 100%;
+  }
+  
+  
+  
+  
+  .mensajes {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+  }
+  
+  
+  
+  
+  .mensaje-wrapper {
+    display: flex;
+    width: 100%;
+  }
+  
+  
+  
+  .mensaje-wrapper.user {
+    justify-content: flex-end;
+    margin-top: 0.1rem;
+    display: flex;
+    width: 100%;
+  }
+  
+  .mensaje-wrapper.assistant {
+    align-items: flex-start;
+  }
+  
+  .burbuja {
+    display: block;
+    max-width: 90%;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 14px;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .burbuja.user {
+    background-color: #4caf50;
+    color: #000;
+    padding: 0.4rem 0.8rem;     /* ✅ menos espacio arriba y a los lados */
+    border-radius: 12px;
+    margin: 0.2rem 0;            /* ✅ menos separación entre mensajes */
+    display: inline-block;
+    width: fit-content;
+    max-width: 90%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.2;           /* ✅ líneas más pegadas */
+  }
+  
+  
+  
+  .burbuja.assistant {
+    background-color: #1a2e3c;
+    color: #e6f3ef;
+    padding: 1rem;
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
+    font-size: 15px;
+  }
+ 
+  .input-container {
+    background-color: #10242d;
+    border: 2px solid #4caf50;
+    border-radius: 10px;
+    padding: 0.75rem;
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem; /* Espacio adicional debajo */
+  }
+  
+  .input-wrapper {
+    width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    background-color: transparent; /* Cambiado a transparente */
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    margin-top: 1rem;
+    padding-bottom: 2rem; /* Aumentamos el padding inferior */
+  margin-top: 1.5rem; /* Más espacio arriba */
+  }
+
+  textarea {
+    flex-grow: 1;
+    background-color: transparent;
+    border: none;
+    color: #e0f2e9;
+    padding: 0.75rem 1rem;
+    font-size: 15px;
+    height: 4rem;
+    resize: none;
+  }
+  
+  
+  textarea:focus {
+    outline: none;
+  }
+  
+  .send-button {
+    background: transparent;
+    border: none;
+    color: #4caf50;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+  }
+  
+/* Estilos para bloques de código */
+.burbuja.assistant pre {
+  background: #1e1e2e !important;
+  border-radius: 8px;
+  padding: 1rem !important;
+  margin: 0.5rem 0 !important;
+  overflow-x: auto;
+  border-left: 3px solid #4caf50;
+}
+
+.burbuja.assistant code {
+  font-family: 'Fira Code', monospace !important;
+  background: transparent !important;
+  color: #e0f2e9 !important;
+}
+
+/* Asegura que Highlight.js use nuestros colores */
+.hljs {
+  background: transparent !important;
+}
+
+/* Personalización de colores */
+.burbuja.assistant .hljs-keyword { color: #d4bfff !important; }
+.burbuja.assistant .hljs-title { color: #89b4fa !important; }
+.burbuja.assistant .hljs-string { color: #a6e3a1 !important; }
+.burbuja.assistant .hljs-number { color: #fab387 !important; }
+
+
+  .burbuja.assistant pre::-webkit-scrollbar-thumb {
+    background: #4caf50;
+    border-radius: 3px;
+  }
+  
+  /* Sintaxis destacada (si usas highlight.js o similar) */
+.burbuja.assistant .hljs-keyword {
+  color: #4caf50 !important; /* Verde para keywords */
+}
+
+.burbuja.assistant .hljs-string {
+  color: #f8bbd0 !important; /* Rosado para strings */
+}
+
+.burbuja.assistant .hljs-number {
+  color: #ffd54f !important; /* Amarillo para números */
+}
+
+pre {
+  position: relative;
+  padding-top: 2rem; /* espacio para el botón */
+}
+
+.copiar-btn {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  background-color: #0f2733;
+  border: 1px solid #4caf50;
+  color: #e0f2e9;
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.3s ease;
+}
+
+.copiar-btn i {
+  pointer-events: none;
+}
+
+.copiar-btn:hover {
+  background-color: #1a3a46;
+}
+
+  
+  .sidebar-item button {
+    background: none;
+    border: none;
+    color: #4caf50;
+    font-size: 16px;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  
+  .sidebar-item button:hover {
+    color: #3e9244;
+  }
+  
+  .sidebar-item .fa-edit,
+  .sidebar-item .fa-trash {
+    font-size: 14px;
+    color: #4caf50;
+    margin-left: 5px;
+    cursor: pointer;
+  }
+  
+  .sidebar-item .fa-edit:hover,
+  .sidebar-item .fa-trash:hover {
+    color: #3e9244;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 120px); /* Reduce altura para dejar espacio al input */
+    color: #4caf50;
+    text-align: center;
+    padding: 2rem;
+    margin-bottom: 1rem; /* Añade espacio debajo */
+    height: calc(100% - 150px);
+  margin-bottom: 2rem;
+  }
+  
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  .empty-state p {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.8;
+  }
+
+  /* Estilo para el scrollbar */
+.mensajes::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mensajes::-webkit-scrollbar-track {
+  background: #0f2733;
+}
+
+.mensajes::-webkit-scrollbar-thumb {
+  background: #4caf50;
+  border-radius: 4px;
+}
+
+.mensajes::-webkit-scrollbar-thumb:hover {
+  background: #3e9244;
+}
+
+.burbuja.assistant pre {
+  /* Scroll para bloques de código */
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4caf50 #1c1c1c;
+  padding: 1rem 1.2rem !important;
+  margin: 0.8rem 0 !important;
+  border-radius: 0 8px 8px 8px !important;
+}
+
+.burbuja.assistant pre::-webkit-scrollbar {
+  height: 6px;
+}
+
+.burbuja.assistant pre::-webkit-scrollbar-track {
+  background: #1c1c1c;
+  border-radius: 3px;
+}
+
+.burbuja.assistant pre::-webkit-scrollbar-thumb {
+  background-color: #4caf50;
+  border-radius: 3px;
+}
+
+.burbuja.assistant pre::-webkit-scrollbar-thumb:hover {
+  background-color: #3e9244;
+}
+
+/* Scroll principal (área de mensajes) */
+.mensajes::-webkit-scrollbar {
+  width: 10px; /* Más ancho */
+}
+
+.mensajes::-webkit-scrollbar-track {
+  background: #0f2733;
+  margin: 15px 0; /* Espacio arriba y abajo */
+}
+
+.mensajes::-webkit-scrollbar-thumb {
+  background: #4caf50;
+  border-radius: 5px;
+  border: 2px solid #0f2733; /* Borde para separar visualmente */
+}
+
+/* Scroll de bloques de código */
+.burbuja.assistant pre::-webkit-scrollbar {
+  height: 8px; /* Más grueso */
+  margin-top: 5px; /* Espacio arriba */
+}
+
+.burbuja.assistant pre::-webkit-scrollbar-track {
+  background: #1a2e3c; /* Color de fondo del assistant */
+  margin: 0 10px; /* Espacio a los lados */
+  border-radius: 0 0 4px 4px;
+}
+
+.new-chat-btn {
+  background: #4caf50;
+  color: #000;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-weight: bold;
+}
+
+.new-chat-btn:hover {
+  background: #3e9244;
+}
+
+.new-chat-btn i {
+  margin-right: 8px;
+}
+
+.texto-usuario {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  font-size: 1rem;
+}
+.burbuja.user::-webkit-scrollbar {
+  height: 6px; /* tamaño horizontal */
+}
+
+.burbuja.user::-webkit-scrollbar-track {
+  background: #0f2733; /* fondo oscuro */
+  border-radius: 4px;
+}
+
+.burbuja.user::-webkit-scrollbar-thumb {
+  background: #a6f4c5; /* pulgar claro (verde pastel o similar) */
+  border-radius: 4px;
+}
+
+.burbuja.user::-webkit-scrollbar-thumb:hover {
+  background: #84e1b5; /* más visible al pasar el cursor */
+}
+
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #0f3b2e;
+  color: #d4e7dd;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.new-chat-btn:hover {
+  background-color: #138f5d;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.burbuja img {
+  max-width: 240px;
+  max-height: 200px;
+  border-radius: 12px;
+  object-fit: contain;
+  display: block;
+  margin: 4px 0;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}

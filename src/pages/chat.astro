@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ChatComponent from "../components/Chat.svelte";
+---
+
+<Layout title="Teesh bot">
+  <div class="chat-container">
+    <ChatComponent client:load />
+  </div>
+</Layout>
+

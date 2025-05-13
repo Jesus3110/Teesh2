@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Chat from "../components/Chat.svelte";
+---
+
+<Layout title="Teesh Bot">
+  <div class="dalle-container">
+    <Chat client:load />
+  </div>
+</Layout>
+
+<style>
+  .dalle-container {
+    margin-top: 1rem; /* Equivalente a mt-4 */
+  }
+</style>
