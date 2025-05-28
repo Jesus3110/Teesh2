@@ -46,7 +46,7 @@
   ];
 
   const body = {
-    model: "gpt-4o",
+    model: "gpt-4o-mini",
     messages: mensajesOpenAI,
     temperature: 0.7,
   };
