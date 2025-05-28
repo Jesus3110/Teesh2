@@ -8,6 +8,7 @@
   // Variables de estado
   let prompt = "";
   let load = false;
+  let escribiendoBot = false;
   let mensajes = [];
   let historial = [];
   let conversacionId = null;
@@ -17,6 +18,8 @@
   let nuevoTitulo = "";
   let sidebarVisible = true;
   let cargandoConversacion = true;
+  let userScrolled = false;
+  
 
   // Configuración de marked y highlight.js
   marked.setOptions({
@@ -43,14 +46,13 @@
   }
 
   // Función para hacer scroll al final
-  function scrollToBottom() {
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (mensajesContainer) {
-          mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
-        }
-      }, 0);
-    });
+  function scrollToBottom(force = false) {
+    if (!mensajesContainer) return;
+    if (force || !userScrolled) {
+      requestAnimationFrame(() => {
+        mensajesContainer.scrollTop = mensajesContainer.scrollHeight;
+      });
+    }
   }
 
   // Función para enviar mensajes
@@ -108,18 +110,26 @@
 
         let i = 0;
         const textoFinal = data.reply;
+        escribiendoBot = true;
 
-        while (i <= textoFinal.length) {
-          await new Promise((resolve) => setTimeout(resolve, 15)); // velocidad de tipeo
+        const interval = setInterval(() => {
+          if (i > textoFinal.length) {
+            clearInterval(interval);
+            nuevoMensaje.contenido = textoFinal;
+            mensajes[mensajes.length - 1] = procesarMensaje(nuevoMensaje);
+            scrollToBottom(true);
+            obtenerHistorial();
+            load = false;
+            escribiendoBot = false;
+            return;
+          }
 
           const parcial = textoFinal.slice(0, i);
-          // Solo el mensaje actual tendrá el cursor visual
           nuevoMensaje.contenido = parcial + "‌|";
           mensajes[mensajes.length - 1] = procesarMensaje(nuevoMensaje);
-
           scrollToBottom();
           i++;
-        }
+        }, 5);
 
         // Quitar cursor al final
         nuevoMensaje.contenido = textoFinal;
@@ -176,7 +186,7 @@
         mensajes = [];
       }
 
-      await fetch(`/api/conversaciones/${id}/actividad`, { method: "POST" });
+      //await fetch(`/api/conversaciones/${id}/actividad`, { method: "POST" });
     } catch (err) {
       console.error("No se pudo cargar la conversación:", err);
       mensajes = [];
@@ -260,6 +270,14 @@
       console.error("Error al inicializar:", err);
       cargandoConversacion = false;
     }
+    mensajesContainer?.addEventListener("scroll", () => {
+      const nearBottom =
+        mensajesContainer.scrollHeight -
+          mensajesContainer.scrollTop -
+          mensajesContainer.clientHeight <
+        100;
+      userScrolled = !nearBottom;
+    });
   });
 
   // Acción para manejar el contenido HTML y botones de copiar
@@ -269,10 +287,46 @@
     const procesarNodos = () => {
       node.innerHTML = marked.parse(contenido);
 
-      if (rol === "assistant") {
-        node.querySelectorAll("pre code").forEach((block) => {
-          hljs.highlightElement(block);
+      // Para mensajes planos SIN bloques de código
+      const tieneCodigo = node.querySelector("pre code");
 
+      // Si NO tiene bloques de código => es texto plano
+      if (!tieneCodigo && (rol === "assistant" || rol === "user")) {
+        const existingBtn = node.querySelector(".copiar-btn-plain");
+        if (existingBtn) existingBtn.remove();
+
+        const button = document.createElement("button");
+        button.className = "copiar-btn-plain";
+        button.innerHTML = '<i class="far fa-copy"></i> Copiar';
+        button.title = "Copiar mensaje";
+
+        button.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          navigator.clipboard.writeText(node.innerText);
+          button.innerHTML = '<i class="fas fa-check"></i> Copiado';
+          setTimeout(() => {
+            button.innerHTML = '<i class="far fa-copy"></i> Copiar';
+          }, 2000);
+        };
+
+        // Botón abajo, centrado
+        button.style.display = "block";
+        button.style.margin = "8px auto 0";
+        button.style.background = "#1f3a3f";
+        button.style.color = "#e0f2e9";
+        button.style.border = "1px solid #4caf50";
+        button.style.borderRadius = "4px";
+        button.style.padding = "4px 8px";
+        button.style.cursor = "pointer";
+        button.style.fontSize = "0.9rem";
+
+        node.appendChild(button);
+      }
+
+      // Código existente para bloques con código
+      if (tieneCodigo) {
+        node.querySelectorAll("pre code").forEach((block) => {
           const existingBtn = block.parentNode.querySelector(".copiar-btn");
           if (existingBtn) existingBtn.remove();
 
@@ -310,35 +364,45 @@
   }
 
   async function handleImagenSeleccionada(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const formData = new FormData();
-  formData.append("imagen", file);
+    const formData = new FormData();
+    formData.append("imagen", file);
 
-  // Añade mensaje visual temporal
-  mensajes = [...mensajes, { rol: "user", contenido: "__IMG__", esImagen: true, archivo: URL.createObjectURL(file) }];
-  scrollToBottom();
-  load = true;
-
-  try {
-    const res = await fetch("/api/imagen", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-
-    // Elimina imagen temporal y agrega respuesta
-    mensajes = [...mensajes, { rol: "assistant", contenido: data.reply }];
-  } catch (err) {
-    mensajes = [...mensajes, { rol: "assistant", contenido: "❌ Error al analizar la imagen." }];
-  } finally {
-    load = false;
+    // Añade mensaje visual temporal
+    mensajes = [
+      ...mensajes,
+      {
+        rol: "user",
+        contenido: "__IMG__",
+        esImagen: true,
+        archivo: URL.createObjectURL(file),
+      },
+    ];
     scrollToBottom();
-  }
-}
+    load = true;
 
+    try {
+      const res = await fetch("/api/imagen", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      // Elimina imagen temporal y agrega respuesta
+      mensajes = [...mensajes, { rol: "assistant", contenido: data.reply }];
+    } catch (err) {
+      mensajes = [
+        ...mensajes,
+        { rol: "assistant", contenido: "❌ Error al analizar la imagen." },
+      ];
+    } finally {
+      load = false;
+      scrollToBottom();
+    }
+  }
 </script>
 
 <link
@@ -360,7 +424,6 @@
 <div class="app-layout">
   <!-- SIDEBAR -->
   <div class:hidden={!sidebarVisible} class="sidebar">
-
     <h3>Conversaciones</h3>
     <button class="new-chat-btn" onclick={nuevaConversacion}>
       <i class="fas fa-plus"></i> Nueva conversación
@@ -463,15 +526,17 @@
             onkeydown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                apiSubmit();
+                if (!escribiendoBot) apiSubmit();
               }
             }}
-            disabled={load || cargandoConversacion}
           ></textarea>
           <button
             class="send-button"
             onclick={apiSubmit}
-            disabled={load || cargandoConversacion || !prompt.trim()}
+            disabled={load ||
+              cargandoConversacion ||
+              escribiendoBot ||
+              !prompt.trim()}
           >
             {#if load}
               <i class="fas fa-spinner fa-spin"></i>

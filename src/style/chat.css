@@ -513,3 +513,29 @@ pre {
   margin: 4px 0;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
+
+textarea::-webkit-scrollbar {
+  width: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: #0f2733; /* color oscuro de fondo */
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background-color: #4caf50; /* color del pulgar (verde brillante) */
+  border-radius: 4px;
+}
+
+.stop-button {
+  margin-top: 0.5rem;
+  background-color: #ff5555;
+  color: white;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.stop-button:hover {
+  background-color: #e03939;
+}
