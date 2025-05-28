@@ -22,11 +22,12 @@
     try {
       json = JSON.parse(text);
     } catch (e) {
-      return new Response(JSON.stringify({ error: "JSON inválido" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  console.error("❌ ERROR /api/chat:", e);
+  return new Response(
+    JSON.stringify({ error: "Error en servidor", detalle: e.message }),
+    { status: 500, headers: { "Content-Type": "application/json" } }
+  );
+}
 
     const { prompt, conversacionId, mensajes: historial = [] } = json;
 
