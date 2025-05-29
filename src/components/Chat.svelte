@@ -170,10 +170,13 @@
 
   // Cargar una conversación específica
   const cargarConversacion = async (id, titulo) => {
+    
     cargandoConversacion = true;
     conversacionId = id;
     tituloSeleccionado = titulo || "Sin título";
     sidebarVisible = false;
+    sidebar?.classList.remove('show');
+
     localStorage.setItem("ultimaConversacion", id); // ✅ guarda la última
 
     try {
@@ -254,31 +257,75 @@
     }
   };
 
+  let sidebar;
+let toggleBtn;
+
   // Inicialización del componente
   onMount(async () => {
-    try {
-      const historialData = await obtenerHistorial();
-      const ultima = localStorage.getItem("ultimaConversacion");
-      const encontrada = historialData.find((c) => c._id === ultima);
+  const toggleBtn = document.querySelector('.sidebar-toggle');
+  const sidebar = document.querySelector('.sidebar');
 
-      if (encontrada) {
-        await cargarConversacion(encontrada._id, encontrada.titulo);
-      } else {
-        cargandoConversacion = false;
-      }
-    } catch (err) {
-      console.error("Error al inicializar:", err);
+  const handleToggle = () => {
+    sidebar?.classList.toggle('show');
+  };
+
+  const handleOutsideClick = (e) => {
+    if (
+      sidebar &&
+      !sidebar.contains(e.target) &&
+      !toggleBtn.contains(e.target)
+    ) {
+      sidebar.classList.remove('show');
+    }
+  };
+
+  // Asignar eventos solo si existen los elementos
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', handleToggle);
+    document.addEventListener('click', handleOutsideClick);
+  }
+
+  // Scroll tracking del contenedor de mensajes
+  mensajesContainer?.addEventListener('scroll', () => {
+    const nearBottom =
+      mensajesContainer.scrollHeight -
+        mensajesContainer.scrollTop -
+        mensajesContainer.clientHeight <
+      100;
+    userScrolled = !nearBottom;
+  });
+
+  // Carga del historial de conversaciones
+  try {
+    const historialData = await obtenerHistorial();
+    const ultima = localStorage.getItem("ultimaConversacion");
+    const encontrada = historialData.find((c) => c._id === ultima);
+
+    if (encontrada) {
+      await cargarConversacion(encontrada._id, encontrada.titulo);
+    } else {
       cargandoConversacion = false;
     }
-    mensajesContainer?.addEventListener("scroll", () => {
-      const nearBottom =
-        mensajesContainer.scrollHeight -
-          mensajesContainer.scrollTop -
-          mensajesContainer.clientHeight <
-        100;
-      userScrolled = !nearBottom;
+  } catch (err) {
+    console.error("Error al inicializar:", err);
+    cargandoConversacion = false;
+  }
+
+  // Cleanup opcional si Svelte destruye el componente
+  return () => {
+    document.removeEventListener('click', handleOutsideClick);
+    toggleBtn?.removeEventListener('click', handleToggle);
+  };
+
+   const textarea = document.querySelector("textarea");
+  if (textarea) {
+    textarea.addEventListener("input", () => {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
     });
-  });
+  }
+});
+
 
   // Acción para manejar el contenido HTML y botones de copiar
   function htmlContent(node, { contenido, rol }) {
@@ -403,6 +450,7 @@
       scrollToBottom();
     }
   }
+
 </script>
 
 <link
@@ -413,6 +461,8 @@
   rel="stylesheet"
   href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/atelier-dune.min.css"
 />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
 <button
   class="sidebar-toggle"
@@ -423,7 +473,7 @@
 
 <div class="app-layout">
   <!-- SIDEBAR -->
-  <div class:hidden={!sidebarVisible} class="sidebar">
+  <div class:hidden={!sidebarVisible} class="sidebar" bind:this={sidebar}>
     <h3>Conversaciones</h3>
     <button class="new-chat-btn" onclick={nuevaConversacion}>
       <i class="fas fa-plus"></i> Nueva conversación
